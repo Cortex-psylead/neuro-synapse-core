@@ -112,11 +112,13 @@ dependencies {
     // ── AndroidX Core ────────────────────────────────────────────────────────
     implementation("androidx.core:core-ktx:1.13.1")
 
-    // ── Sprint 2 (comentado hasta su implementación) ─────────────────────────
+    // ── Sprint 2 — activado ───────────────────────────────────────────────────
     // Play Integrity API para attestSessionIntegrity()
     implementation("com.google.android.play:integrity:1.3.0")
-    // Biometric para autenticación del terapeuta
+    // Biometric para autenticación BIOMETRIC_STRONG del terapeuta
     implementation("androidx.biometric:biometric:1.2.0-alpha05")
+    // Coroutines Play tasks adapter (para .await() sobre Task<T>)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1")
 
     // ── Sprint 3-5 (comentado hasta su implementación) ───────────────────────
     // ONNX Runtime Mobile para los motores SLM y YOLO
