@@ -114,9 +114,9 @@ dependencies {
 
     // ── Sprint 2 (comentado hasta su implementación) ─────────────────────────
     // Play Integrity API para attestSessionIntegrity()
-    // implementation("com.google.android.play:integrity:1.3.0")
+    implementation("com.google.android.play:integrity:1.3.0")
     // Biometric para autenticación del terapeuta
-    // implementation("androidx.biometric:biometric:1.2.0-alpha05")
+    implementation("androidx.biometric:biometric:1.2.0-alpha05")
 
     // ── Sprint 3-5 (comentado hasta su implementación) ───────────────────────
     // ONNX Runtime Mobile para los motores SLM y YOLO
