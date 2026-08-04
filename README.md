@@ -7,6 +7,10 @@
 > [!IMPORTANT]  
 > **DISCLAIMER:** This is a clinical assistant tool, not a diagnostic device. All AI drafts must be verified by a licensed professional. Neuro-Synapse does not replace human clinical judgment.
 
+> [!WARNING]  
+> **UNDER CONSTRUCTION:** This project is in an early development phase. Its core functions are not yet fully developed and may undergo significant changes.  
+> **EN CONSTRUCCIÓN:** Este proyecto está en fase de desarrollo. Sus funciones principales aún no están totalmente desarrolladas y pueden sufrir cambios significativos.
+
 ---
 
 ## 🇪🇸 Resumen del Proyecto
