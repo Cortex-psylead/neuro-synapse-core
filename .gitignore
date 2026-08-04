@@ -56,6 +56,13 @@ data/src/main/assets/models/
 *.pem
 *.key
 
+# Análisis de Memoria y Bases de Datos Locales
+*.hprof
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
 # Código Generado por Compiladores (KSP/KAPT)
 build/generated/
 **/generated/

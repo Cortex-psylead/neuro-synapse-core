@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="deep_clinical_bg">#0F172A</color>
+    <color name="deep_clinical_surface">#1E293B</color>
+    <color name="accent_vision">#06B6D4</color>
+    <color name="accent_voice">#10B981</color>
+    <color name="accent_integral">#8B5CF6</color>
+    <color name="text_primary">#F8FAFC</color>
+    <color name="text_secondary">#94A3B8</color>
+    <color name="status_red">#EF4444</color>
+    <color name="status_green">#10B981</color>
+</resources>

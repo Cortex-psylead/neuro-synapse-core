@@ -1,7 +1,7 @@
-package com.neurosynapse.domain.session
+﻿package com.neurosynapse.domain.session
 
-import com.neurosynapse.domain.acoustic.AcousticContrastMatrix
 import com.neurosynapse.domain.common.SessionId
+import com.neurosynapse.domain.acoustic.AcousticContrastMatrix
 import com.neurosynapse.domain.projective.ProjectiveMorphometryMatrix
 import com.neurosynapse.domain.synthesis.ClinicalDraftReport
 
@@ -12,29 +12,17 @@ interface ClinicalSessionRepository {
     suspend fun deleteSession(sessionId: SessionId)
 }
 
-interface ClinicalArtifactRepository {
-    suspend fun saveAcousticMatrix(matrix: AcousticContrastMatrix)
-    suspend fun findAcousticMatrix(sessionId: SessionId): AcousticContrastMatrix?
-    suspend fun saveProjectiveMatrix(matrix: ProjectiveMorphometryMatrix)
-    suspend fun findProjectiveMatrix(sessionId: SessionId): ProjectiveMorphometryMatrix?
-    suspend fun saveDraftReport(report: ClinicalDraftReport)
-    suspend fun findDraftReport(sessionId: SessionId): ClinicalDraftReport?
-}
-
 interface AuditLogRepository {
-    suspend fun appendEntry(entry: AuditLogEntry)
-    suspend fun findEntriesForSession(sessionId: SessionId): List<AuditLogEntry>
-    suspend fun verifyLogIntegrity(sessionId: SessionId): Boolean
+    suspend fun insertEntry(entry: AuditLogEntry)
+    suspend fun getEntriesForSession(sessionId: SessionId): List<AuditLogEntry>
+    suspend fun countEntriesForSession(sessionId: String): Int
 }
 
-class PersistenceException(
-    val sessionId: SessionId,
-    message: String,
-    cause: Throwable? = null
-) : Exception(message, cause)
-
-class AuditLogCorruptionException(
-    val sessionId: SessionId,
-    val entryId: String,
-    message: String
-) : Exception(message)
+interface ClinicalArtifactRepository {
+    suspend fun saveAcousticMatrix(sessionId: SessionId, matrix: AcousticContrastMatrix)
+    suspend fun getAcousticMatrix(sessionId: SessionId): AcousticContrastMatrix?
+    suspend fun saveProjectiveMatrix(sessionId: SessionId, matrix: ProjectiveMorphometryMatrix)
+    suspend fun getProjectiveMatrix(sessionId: SessionId): ProjectiveMorphometryMatrix?
+    suspend fun saveDraftReport(sessionId: SessionId, report: ClinicalDraftReport)
+    suspend fun getDraftReport(sessionId: SessionId): ClinicalDraftReport?
+}

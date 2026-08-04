@@ -1,156 +1,98 @@
-package com.neurosynapse.domain.common
+﻿package com.neurosynapse.domain.common
 
-import kotlin.jvm.JvmInline
+import kotlinx.serialization.Serializable
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
+// --- Identificadores e Integridad ---
+@Serializable
 @JvmInline
-value class SessionId(val value: String) {
-    init {
-        require(value.matches(UUID_V4_REGEX)) {
-            "SessionId debe ser UUID v4 válido. Recibido: $value"
-        }
-    }
+value class SessionId(val value: String)
+
+@Serializable
+@JvmInline
+value class IntegrityHash(val hex: String)
+
+@Serializable
+@JvmInline
+value class SchemaVersion(val value: Int) {
     companion object {
-        private val UUID_V4_REGEX =
-            Regex("^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")
+        val ACOUSTIC_MATRIX_V1 = SchemaVersion(1)
+        val PROJECTIVE_MATRIX_V1 = SchemaVersion(1)
+        val CLINICAL_DRAFT_V1 = SchemaVersion(1)
     }
 }
 
+// --- Contexto del Sujeto (NUEVO) ---
+@Serializable
 @JvmInline
-value class IntegrityHash(val hex: String) {
-    init {
-        require(hex.matches(SHA256_REGEX)) {
-            "IntegrityHash debe ser SHA-256 válido (64 hex). Recibido: $hex"
-        }
-    }
-    companion object {
-        private val SHA256_REGEX = Regex("^[0-9a-f]{64}$")
-        val PENDING = IntegrityHash("0".repeat(64))
-    }
-}
+value class SubjectAge(val value: Int)
 
+@Serializable
+enum class SubjectSex { MALE, FEMALE, OTHER, UNDISCLOSED }
+
+// --- Tiempo ---
+@Serializable
 @JvmInline
 value class UtcTimestamp(val iso8601: String) {
-    init {
-        require(iso8601.matches(ISO8601_REGEX)) {
-            "UtcTimestamp debe ser ISO-8601 UTC. Recibido: $iso8601"
-        }
-    }
     companion object {
-        private val ISO8601_REGEX =
-            Regex("""^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$""")
-    }
-}
-
-@JvmInline
-value class SchemaVersion(val semver: String) {
-    companion object {
-        val ACOUSTIC_MATRIX_V1 = SchemaVersion("1.2.0")
-        val PROJECTIVE_MATRIX_V1 = SchemaVersion("1.0.0")
-        val CLINICAL_DRAFT_V1 = SchemaVersion("1.0.0")
-    }
-}
-
-@JvmInline
-value class ClinicalPercent(val value: Double) {
-    init {
-        require(value in 0.0..100.0) {
-            "ClinicalPercent debe estar en [0.0, 100.0]. Recibido: $value"
+        fun now(): UtcTimestamp {
+            return UtcTimestamp(
+                Instant.now()
+                    .atOffset(ZoneOffset.UTC)
+                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"))
+            )
         }
     }
 }
 
+@Serializable
 @JvmInline
-value class Decibels(val value: Double) {
-    init {
-        require(value in -60.0..60.0) {
-            "Decibels fuera de rango clínico plausible [-60, 60]. Recibido: $value"
-        }
-    }
-}
+value class DurationMs(val value: Long)
 
+// --- Métricas Físicas y Clínicas ---
+@Serializable
 @JvmInline
-value class FrequencyHz(val value: Double) {
-    init {
-        require(value in 50.0..500.0) {
-            "FrequencyHz fuera de rango vocal humano [50, 500]. Recibido: $value"
-        }
-    }
-}
+value class FrequencyHz(val value: Float)
 
+@Serializable
 @JvmInline
-value class DurationMs(val value: Long) {
-    init {
-        require(value >= 0) { "DurationMs no puede ser negativa. Recibido: $value" }
-    }
-}
+value class Decibels(val value: Float)
 
+@Serializable
 @JvmInline
-value class ScaleFactor(val value: Double) {
-    init {
-        require(value > 0.0) { "ScaleFactor debe ser positivo. Recibido: $value" }
-    }
-    companion object {
-        val NEUTRAL = ScaleFactor(1.0)
-    }
-}
+value class ClinicalPercent(val value: Float)
 
+@Serializable
 @JvmInline
-value class NormalizedIndex(val value: Double) {
-    init {
-        require(value in 0.0..1.0) {
-            "NormalizedIndex debe estar en [0.0, 1.0]. Recibido: $value"
-        }
-    }
-}
+value class ScaleFactor(val value: Float)
 
+@Serializable
+@JvmInline
+value class NormalizedIndex(val value: Float)
+
+@Serializable
+@JvmInline
+value class ClinicalFlag(val active: Boolean)
+
+// --- Enums de Dominio ---
 enum class PipelinePhase {
-    IDLE,
-    CAPTURE,
-    ACOUSTIC_ANALYSIS,
-    VISUAL_ANALYSIS,
-    CLINICAL_SYNTHESIS,
-    COMPLETED,
-    ABORTED
+    IDLE, CAPTURE, ACOUSTIC_ANALYSIS, VISUAL_ANALYSIS, CLINICAL_SYNTHESIS, COMPLETED, ABORTED
 }
 
 enum class ConsentLevel {
-    NONE,
-    CLINICAL_USE_ONLY,
-    CLINICAL_AND_ANONYMIZED_DONATION
-}
-
-enum class ClinicalFlag {
-    ELEVATED_AUTONOMIC_ACTIVATION,
-    NORMAL,
-    HYPOAROUSAL
-}
-
-enum class TriggerCategory {
-    ANXIETY,
-    DEPRESSION,
-    GRIEF,
-    TRAUMA,
-    UNSPECIFIED
+    NONE, VERBAL, SIGNED_DIGITAL, EMERGENCY_IMPLICIT
 }
 
 enum class AudioChannelType {
-    STRUCTURED_READING,
-    SPONTANEOUS_SPEECH
+    STRUCTURED_READING, SPONTANEOUS_SPEECH, MONO, STEREO_LEFT, STEREO_RIGHT
+}
+
+enum class TriggerCategory {
+    PROSODIC_ANOMALY, EMOTIONAL_BREAK, COGNITIVE_LOAD, SYSTEM_THROTTLING
 }
 
 enum class ProjectiveTestType {
-    HTP_HOUSE,
-    HTP_TREE,
-    HTP_PERSON,
-    MACHOVER_HUMAN_FIGURE,
-    KOCH_TREE,
-    PERSON_IN_THE_RAIN,
-    KOPPITZ_BENDER
-}
-
-enum class NarrativeTestType {
-    SACKS_INCOMPLETE_SENTENCES,
-    ROTTER_INCOMPLETE_SENTENCES,
-    TAT,
-    CAT
+    HTP_HOUSE, HTP_TREE, HTP_PERSON, MACHOVER_HUMAN_FIGURE, KOCH_TREE, PERSON_IN_THE_RAIN, OTHER
 }

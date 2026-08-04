@@ -1,7 +1,9 @@
-package com.neurosynapse.domain.synthesis
+﻿package com.neurosynapse.domain.synthesis
 
 import com.neurosynapse.domain.common.*
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class SoapSubjective(
     val patientNarrativeSummary: String,
     val reportedSymptoms: List<String>,
@@ -9,6 +11,7 @@ data class SoapSubjective(
     val keyThemes: List<String>
 )
 
+@Serializable
 data class SoapObjective(
     val acousticSummary: AcousticSummaryForReport,
     val projectiveSummary: ProjectiveSummaryForReport,
@@ -16,18 +19,21 @@ data class SoapObjective(
     val projectiveMatrixHash: IntegrityHash
 )
 
+@Serializable
 data class AcousticSummaryForReport(
     val clinicalFlag: ClinicalFlag,
     val compositeStressIndex: NormalizedIndex,
     val keyFindings: List<String>
 )
 
+@Serializable
 data class ProjectiveSummaryForReport(
     val testsAdministered: List<String>,
     val keyFindings: List<String>,
     val lowConfidenceWarnings: List<String>
 )
 
+@Serializable
 data class SoapAssessment(
     val clinicalHypotheses: List<ClinicalHypothesis>,
     val differentialConsiderations: List<String>,
@@ -39,6 +45,7 @@ data class SoapAssessment(
         "Los códigos diagnósticos son sugerencias de trabajo, no diagnósticos confirmados."
 )
 
+@Serializable
 data class ClinicalHypothesis(
     val description: String,
     val supportingEvidence: List<String>,
@@ -48,6 +55,7 @@ data class ClinicalHypothesis(
 
 enum class HypothesisConfidence { LOW, MODERATE, HIGH }
 
+@Serializable
 data class SoapPlan(
     val suggestedInterventions: List<String>,
     val recommendedFollowUpTests: List<String>,
@@ -55,6 +63,7 @@ data class SoapPlan(
     val sessionFrequencyRecommendation: String?
 )
 
+@Serializable
 data class SlmGenerationMetadata(
     val modelId: String,
     val modelVersion: String,
@@ -65,6 +74,7 @@ data class SlmGenerationMetadata(
     val temperature: Double
 )
 
+@Serializable
 data class ClinicalDraftReport(
     val sessionId: SessionId,
     val schemaVersion: SchemaVersion = SchemaVersion.CLINICAL_DRAFT_V1,
