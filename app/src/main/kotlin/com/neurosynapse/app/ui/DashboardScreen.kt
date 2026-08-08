@@ -10,6 +10,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
+import androidx.compose.material.icons.automirrored.rounded.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.rounded.KeyboardArrowRight
 import androidx.compose.material3.*
@@ -111,7 +113,7 @@ fun ClinicalModuleCard(
 
             // Flecha final
             Icon(
-                imageVector = Icons.Rounded.KeyboardArrowRight,
+                imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
                 contentDescription = null,
                 tint = Color.White.copy(alpha = 0.3f)
             )
@@ -187,7 +189,7 @@ fun DashboardScreen(
                 val modules = listOf(
                     ModuleData(Icons.Default.Draw, "Captura HTP", "Análisis gráfico proyectivo", Color(0xFFF43F5E)),
                     ModuleData(Icons.Default.RecordVoiceOver, "Test de Prosodia", "Análisis de entonación clínica", Color(0xFF8B5CF6)),
-                    ModuleData(Icons.Default.Assignment, "Evaluación Integral", "Reporte multidimensional", Color(0xFF0EA5E9))
+                    ModuleData(Icons.AutoMirrored.Filled.Assignment, "Evaluación Integral", "Reporte multidimensional", Color(0xFF0EA5E9))
                 )
 
                 LazyColumn(

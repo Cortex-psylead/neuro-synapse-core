@@ -31,10 +31,10 @@ dependencies {
     implementation(project(":domain"))
     
     // OpenCV para Android
-    implementation("com.quickbirdstudios:opencv:4.5.3.0")
+    api("com.quickbirdstudios:opencv:4.5.3.0")
     
-    // IA: MediaPipe LLM (Estándar de Google para Llama 3.2 local)
-    implementation("com.google.mediapipe:tasks-genai:0.10.14")
+    // IA: Removido MediaPipe (Migración a llama.cpp soberana)
+    // api("com.google.mediapipe:tasks-genai:0.10.27")
 
     val roomVersion = "2.7.0-alpha13"
     implementation("androidx.room:room-runtime:$roomVersion")

@@ -1,81 +1,28 @@
-# ═══════════════════════════════════════════════════════════════════════════════
-# NEURO-SYNAPSE — .gitignore (Estrategia Open-Core FOSS)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-# Android Studio / IntelliJ IDE
+﻿# Android Studio / IntelliJ
 .idea/
-*.iml
-*.iws
-*.ipr
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/gradle.xml
-.idea/assetWizardSettings.xml
-.idea/dictionaries
-.idea/libraries
-.idea/caches
-.idea/modules.xml
-!.idea/codeStyles/
-!.idea/inspectionProfiles/
-!.idea/copyright/
-
-# Gradle Build Artifacts
 .gradle/
 build/
-*/build/
-**/build/
-out/
-!gradle/wrapper/gradle-wrapper.jar
-!gradle/wrapper/gradle-wrapper.properties
-**/.gradle/
+capture/
+*.iml
 local.properties
-captures/
 
-# Compilación Nativa (NDK / C++ / CMake)
-.cxx/
-**/obj/
-**/libs/
-.cmake/
-cmake_install.cmake
-CMakeCache.txt
-CMakeFiles/
-Makefile
-
-# Modelos de Inteligencia Artificial (Edge AI / Biometría)
-# Los modelos pesados jamás se suben a Git público.
-*.onnx
-*.gguf
-*.bin
-*.tflite
-data/src/main/assets/models/
-
-# Seguridad y Llaves Criptográficas
-*.jks
-*.keystore
-*.p12
-*.pem
-*.key
-
-# Análisis de Memoria y Bases de Datos Locales
+# Archivos de memoria y diagnóstico
 *.hprof
+*.py
+
+# Modelos de IA (Pesados - NO SUBIR)
+*.gguf
+*.task
+*.bin
+
+# Persistencia y Sesiones locales
+.artifacts/
+.kotlin/
+**/sessions/
 *.db
-*.db-journal
 *.db-shm
 *.db-wal
 
-# Código Generado por Compiladores (KSP/KAPT)
-build/generated/
-**/generated/
-**/*_Impl.java
-**/*_Impl.kt
-**/*Dao_Impl*
-**/*Database_Impl*
-!**/schemas/
-
-# Sistema Operativo
+# OS
 .DS_Store
 Thumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-*~
-

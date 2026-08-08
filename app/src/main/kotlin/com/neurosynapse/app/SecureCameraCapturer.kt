@@ -17,13 +17,14 @@ import kotlin.coroutines.suspendCoroutine
 class SecureCameraCapturer(private val context: Context) {
 
     private var imageCapture: ImageCapture? = null
+    private var cameraProvider: ProcessCameraProvider? = null
     private val cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
 
     fun startPreview(lifecycleOwner: LifecycleOwner, previewView: PreviewView) {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
 
         cameraProviderFuture.addListener({
-            val cameraProvider = cameraProviderFuture.get()
+            cameraProvider = cameraProviderFuture.get()
             
             val preview = Preview.Builder().build().also {
                 it.setSurfaceProvider(previewView.surfaceProvider)
@@ -36,14 +37,25 @@ class SecureCameraCapturer(private val context: Context) {
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
             try {
-                cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(
+                cameraProvider?.unbindAll()
+                cameraProvider?.bindToLifecycle(
                     lifecycleOwner, cameraSelector, preview, imageCapture
                 )
             } catch (e: Exception) {
                 Log.e("SecureCamera", "Fallo al iniciar cámara", e)
             }
         }, ContextCompat.getMainExecutor(context))
+    }
+
+    fun releaseCamera() {
+        try {
+            cameraProvider?.unbindAll()
+            cameraProvider = null
+            imageCapture = null
+            Log.d("SecureCamera", "Recursos de cámara liberados exitosamente.")
+        } catch (e: Exception) {
+            Log.e("SecureCamera", "Error al liberar cámara", e)
+        }
     }
 
     suspend fun captureBurst(sessionId: String, count: Int = 3): List<File> {
@@ -57,12 +69,18 @@ class SecureCameraCapturer(private val context: Context) {
     }
 
     private suspend fun captureSingle(sessionId: String, fileName: String): File = suspendCoroutine { continuation ->
+        val capture = imageCapture
+        if (capture == null) {
+            continuation.resumeWith(Result.failure(IllegalStateException("Cámara no inicializada")))
+            return@suspendCoroutine
+        }
+
         val sessionDir = File(context.filesDir, "sessions/$sessionId").apply { mkdirs() }
         val photoFile = File(sessionDir, fileName)
 
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
-        imageCapture?.takePicture(
+        capture.takePicture(
             outputOptions,
             ContextCompat.getMainExecutor(context),
             object : ImageCapture.OnImageSavedCallback {
@@ -70,6 +88,7 @@ class SecureCameraCapturer(private val context: Context) {
                     continuation.resume(photoFile)
                 }
                 override fun onError(exc: ImageCaptureException) {
+                    Log.e("SecureCamera", "Error al capturar imagen", exc)
                     continuation.resumeWith(Result.failure(exc))
                 }
             }
@@ -77,7 +96,9 @@ class SecureCameraCapturer(private val context: Context) {
     }
 
     suspend fun captureProjectiveTest(sessionId: String): File {
-        return captureSingle(sessionId, "test_htp_raw.jpg")
+        val file = captureSingle(sessionId, "test_htp_raw.jpg")
+        delay(500) // Lead: Pausa extendida para asegurar el sellado del archivo JPG en disco
+        return file
     }
 
     fun shutdown() {
