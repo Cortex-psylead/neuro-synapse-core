@@ -1,13 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="deep_clinical_bg">#0F172A</color>
-    <color name="deep_clinical_surface">#1E293B</color>
-    <color name="accent_vision">#06B6D4</color>
-    <color name="accent_voice">#10B981</color>
-    <color name="accent_integral">#8B5CF6</color>
+    <!-- Professional Clinical Palette -->
+    <color name="clinical_bg">#0F172A</color>
+    <color name="clinical_surface">#1E293B</color>
+    <color name="clinical_accent">#06B6D4</color>
+
+    <!-- Neutral Colors -->
     <color name="text_primary">#F8FAFC</color>
     <color name="text_secondary">#94A3B8</color>
-    <color name="status_red">#EF4444</color>
+    <color name="border_neutral">#2D3748</color>
+
+    <!-- Status Colors -->
     <color name="status_green">#10B981</color>
-    <color name="status_yellow">#F59E0B</color>
+    <color name="status_red">#EF4444</color>
+    <color name="status_amber">#F59E0B</color>
+    <color name="status_gray">#64748B</color>
+
+    <!-- JSON Syntax Highlighting -->
+    <color name="json_key">#06B6D4</color>
+    <color name="json_string">#10B981</color>
+    <color name="json_number">#F59E0B</color>
+    <color name="json_boolean">#8B5CF6</color>
 </resources>

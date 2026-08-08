@@ -15,6 +15,10 @@ local.properties
 *.task
 *.bin
 
+# OpenCV Binaries (Se gestionan por Gradle)
+**/sdk/native/libs
+**/sdk/native/jni
+
 # Persistencia y Sesiones locales
 .artifacts/
 .kotlin/

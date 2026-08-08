@@ -5,9 +5,9 @@
     android:id="@+id/mainRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/deep_clinical_bg">
+    android:background="@color/clinical_bg">
 
-    <!-- 1. VISTA DE CÁMARA -->
+    <!-- 1. VISTA DE CÁMARA (FULL SCREEN) -->
     <androidx.camera.view.PreviewView
         android:id="@+id/viewFinder"
         android:layout_width="match_parent"
@@ -16,7 +16,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- OVERLAY GUÍA A4 Y SENSORES -->
+    <!-- OVERLAY GUÍA A4 -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cameraOverlay"
         android:layout_width="match_parent"
@@ -31,131 +31,85 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintDimensionRatio="1:1.414"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHeight_percent="0.8"
+            app:layout_constraintHeight_percent="0.75"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="32dp"
-            android:orientation="horizontal"
-            app:layout_constraintBottom_toTopOf="@id/a4Guide"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
-
-            <TextView
-                android:id="@+id/txtLightLevel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="#80000000"
-                android:padding="4dp"
-                android:text="LUZ: --"
-                android:textColor="@color/text_primary"
-                android:textSize="10sp" />
-
-            <TextView
-                android:id="@+id/txtTiltLevel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:background="#80000000"
-                android:padding="4dp"
-                android:text="NIVEL: --"
-                android:textColor="@color/text_primary"
-                android:textSize="10sp" />
-        </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- 2. INDICADOR DE ESTADO DE IA Y BOTONES DE ACCIÓN -->
-    <LinearLayout
+    <!-- 2. HEADER GLOBAL (STATUS PILL) -->
+    <com.google.android.material.card.MaterialCardView
         android:id="@+id/aiStatusContainer"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:orientation="horizontal"
+        android:layout_height="40dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="20dp"
         android:visibility="gone"
+        app:cardBackgroundColor="@color/clinical_surface"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="8dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        app:strokeWidth="0dp">
 
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/btnAiInfo"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:layout_marginEnd="8dp"
-            android:clickable="true"
-            android:focusable="true"
-            app:cardBackgroundColor="#1E293B"
-            app:cardCornerRadius="22dp"
-            app:cardElevation="4dp"
-            app:rippleColor="@color/accent_vision"
-            app:strokeWidth="0dp">
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_info"
-                android:contentDescription="Información de IA"
-                app:tint="@color/accent_vision" />
-        </com.google.android.material.card.MaterialCardView>
-
-        <com.google.android.material.card.MaterialCardView
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            app:cardBackgroundColor="#1E293B"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="4dp"
-            app:strokeWidth="0dp">
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="12dp">
 
-            <LinearLayout
+            <View
+                android:id="@+id/aiStatusDot"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:background="@color/status_red" />
+
+            <TextView
+                android:id="@+id/aiStatusText"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="12dp">
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="@string/status_ai_none"
+                android:textColor="@color/text_primary"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05" />
 
-                <View
-                    android:id="@+id/aiStatusDot"
-                    android:layout_width="8dp"
-                    android:layout_height="8dp"
-                    android:background="@color/status_red" />
+            <ImageView
+                android:id="@+id/btnAiInfo"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginStart="12dp"
+                android:src="@drawable/ic_info"
+                android:clickable="true"
+                android:focusable="true"
+                app:tint="@color/text_secondary" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
-                <TextView
-                    android:id="@+id/aiStatusText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:text="IA NO CARGADA"
-                    android:textColor="@color/text_primary"
-                    android:textSize="10sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-    </LinearLayout>
-
-    <!-- 3. BOTÓN DE DESBLOQUEO -->
+    <!-- 3. BOTÓN DE DESBLOQUEO BIOMÉTRICO -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnUnlock"
         style="@style/Widget.Material3.Button.OutlinedButton"
-        android:layout_width="240dp"
-        android:layout_height="240dp"
+        android:layout_width="220dp"
+        android:layout_height="220dp"
         android:insetLeft="0dp"
         android:insetTop="0dp"
         android:insetRight="0dp"
         android:insetBottom="0dp"
-        android:text="DESBLOQUEAR\nCORE"
-        android:textColor="@color/accent_vision"
+        android:text="@string/btn_unlock"
+        android:textColor="@color/clinical_accent"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:visibility="visible"
-        app:cornerRadius="120dp"
+        android:lineSpacingMultiplier="1.2"
+        app:cornerRadius="110dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:strokeColor="@color/accent_vision"
-        app:strokeWidth="2dp" />
+        app:strokeColor="@color/clinical_accent"
+        app:strokeWidth="2.5dp" />
 
     <!-- 4. DASHBOARD DE MÓDULOS -->
     <androidx.core.widget.NestedScrollView
@@ -163,41 +117,41 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:clipToPadding="false"
         app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:padding="28dp">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:text="Neuro-Synapse"
-                android:textColor="@color/accent_vision"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                android:layout_marginTop="40dp"
+                android:text="NEURO-SYNAPSE"
+                android:textColor="@color/clinical_accent"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.1" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Dashboard Clínico"
+                android:text="@string/dashboard_title"
                 android:textColor="@color/text_primary"
-                android:textSize="28sp"
+                android:textSize="32sp"
                 android:textStyle="bold" />
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+            <View
+                android:layout_width="60dp"
+                android:layout_height="4dp"
+                android:layout_marginTop="8dp"
                 android:layout_marginBottom="32dp"
-                android:text="Seleccione un módulo de evaluación"
-                android:textColor="@color/text_secondary"
-                android:textSize="14sp" />
+                android:background="@color/clinical_accent" />
 
-            <!-- Card Vision (PRINCIPAL) -->
+            <!-- CARD VISIÓN (ACTIVO) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/btnModeImage"
                 android:layout_width="match_parent"
@@ -205,229 +159,220 @@
                 android:layout_marginBottom="16dp"
                 android:clickable="true"
                 android:focusable="true"
-                app:cardBackgroundColor="@color/deep_clinical_surface"
+                app:cardBackgroundColor="@color/clinical_surface"
                 app:cardCornerRadius="24dp"
-                app:strokeColor="@color/accent_vision"
-                app:strokeWidth="1dp">
+                app:strokeColor="@color/clinical_accent"
+                app:strokeWidth="2dp">
 
-                <LinearLayout
+                <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:padding="20dp">
+                    android:padding="24dp">
 
                     <ImageView
+                        android:id="@+id/iconVision"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:src="@drawable/ic_vision"
-                        android:contentDescription="Icono de Visión"
-                        app:tint="@color/accent_vision" />
+                        app:tint="@color/clinical_accent" />
 
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:layout_weight="1"
+                        android:layout_marginStart="20dp"
+                        android:layout_toEndOf="@id/iconVision"
                         android:orientation="vertical">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="VISIÓN (HTP)"
+                            android:text="@string/module_vision"
                             android:textColor="@color/text_primary"
-                            android:textSize="18sp"
+                            android:textSize="20sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Captura y análisis HTP nativo"
+                            android:text="Análisis de trazo y espacialidad"
                             android:textColor="@color/text_secondary"
-                            android:textSize="12sp" />
+                            android:textSize="14sp" />
                     </LinearLayout>
-                </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:background="@drawable/bg_badge_active"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp"
+                        android:text="@string/module_active"
+                        android:textColor="@color/clinical_bg"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+                </RelativeLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Card Voice (MANTENIMIENTO) -->
+            <!-- CARD VOZ (MANTENIMIENTO) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/btnModeAudio"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:clickable="true"
-                android:focusable="true"
                 android:alpha="0.5"
-                app:cardBackgroundColor="@color/deep_clinical_surface"
+                app:cardBackgroundColor="@color/clinical_surface"
                 app:cardCornerRadius="24dp"
-                app:strokeColor="@color/accent_voice"
-                app:strokeWidth="1dp">
+                app:strokeWidth="0dp">
 
-                <LinearLayout
+                <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:padding="20dp">
+                    android:padding="24dp">
 
                     <ImageView
+                        android:id="@+id/iconVoice"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:src="@drawable/ic_voice"
-                        android:contentDescription="Icono de Voz"
-                        app:tint="@color/accent_voice" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="VOZ"
-                            android:textColor="@color/text_primary"
-                            android:textSize="18sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Módulo en mantenimiento - Enfoque en Visión v1"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Card Integral (MANTENIMIENTO) -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/btnModeFull"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:alpha="0.5"
-                app:cardBackgroundColor="@color/deep_clinical_surface"
-                app:cardCornerRadius="24dp"
-                app:strokeColor="@color/accent_integral"
-                app:strokeWidth="1dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:padding="20dp">
-
-                    <ImageView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:src="@drawable/ic_integral"
-                        android:contentDescription="Icono Integral"
-                        app:tint="@color/accent_integral" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="INTEGRAL"
-                            android:textColor="@color/text_primary"
-                            android:textSize="18sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Módulo en mantenimiento - Enfoque en Visión v1"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Card Settings -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/btnSystemSettings"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:clickable="true"
-                android:focusable="true"
-                app:cardBackgroundColor="?attr/colorSurfaceVariant"
-                app:cardCornerRadius="16dp"
-                app:strokeWidth="0dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:padding="12dp">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_settings"
                         app:tint="@color/text_secondary" />
 
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
-                        android:layout_weight="1"
+                        android:layout_marginStart="20dp"
+                        android:layout_toEndOf="@id/iconVoice"
                         android:orientation="vertical">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Ajustes del Sistema"
+                            android:text="@string/module_voice"
                             android:textColor="@color/text_primary"
-                            android:textSize="12sp"
+                            android:textSize="20sp"
                             android:textStyle="bold" />
 
                         <TextView
-                            android:id="@+id/txtDeviceHealth"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Salud del Sistema: Cargando..."
+                            android:text="Análisis prosódico en tiempo real"
                             android:textColor="@color/text_secondary"
-                            android:textSize="10sp" />
+                            android:textSize="14sp" />
                     </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:background="@drawable/bg_badge_gray"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp"
+                        android:text="@string/module_maintenance"
+                        android:textColor="@color/text_primary"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+                </RelativeLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- STATS DE SISTEMA (BARRAS VISUALES) -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="12dp"
+                android:text="@string/system_stats"
+                android:textColor="@color/text_secondary"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/clinical_surface"
+                app:cardCornerRadius="16dp"
+                app:strokeWidth="0.5dp"
+                app:strokeColor="@color/border_neutral">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:id="@+id/lblRam"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="MEMORIA RAM"
+                        android:textColor="@color/text_primary"
+                        android:textSize="10sp" />
+
+                    <ProgressBar
+                        android:id="@+id/progressRam"
+                        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="6dp"
+                        android:layout_marginTop="6dp"
+                        android:layout_marginBottom="16dp"
+                        android:progress="0"
+                        android:progressDrawable="@drawable/progress_custom_cyan" />
+
+                    <TextView
+                        android:id="@+id/lblBattery"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="NIVEL DE BATERÍA"
+                        android:textColor="@color/text_primary"
+                        android:textSize="10sp" />
+
+                    <ProgressBar
+                        android:id="@+id/progressBattery"
+                        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="6dp"
+                        android:layout_marginTop="6dp"
+                        android:progress="0"
+                        android:progressDrawable="@drawable/progress_custom_green" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSystemSettings"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="16dp"
+                android:text="AJUSTES AVANZADOS"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                app:icon="@drawable/ic_settings"
+                app:iconSize="16dp"
+                app:iconTint="@color/text_secondary" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- 5. PANEL DE CONTROL -->
+    <!-- 5. PANEL DE CONTROL Y REPORTE -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/controlPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
+        android:layout_marginHorizontal="20dp"
         android:layout_marginBottom="32dp"
         android:visibility="gone"
-        app:cardBackgroundColor="@color/deep_clinical_surface"
-        app:cardCornerRadius="24dp"
+        app:cardBackgroundColor="@color/clinical_surface"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:strokeColor="@color/accent_vision"
+        app:strokeColor="@color/clinical_accent"
         app:strokeWidth="1dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:padding="28dp">
 
             <TextView
                 android:id="@+id/txtStatus"
@@ -435,43 +380,52 @@
                 android:layout_height="wrap_content"
                 android:textAlignment="center"
                 android:textColor="@color/text_primary"
-                android:textSize="18sp"
+                android:textSize="20sp"
                 android:textStyle="bold" />
 
+            <!-- CONTENEDOR DE REPORTE CON SYNTAX HIGHLIGHTING -->
             <androidx.core.widget.NestedScrollView
                 android:id="@+id/scrollDictation"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:layout_marginTop="16dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:maxHeight="450dp"
                 android:visibility="gone">
 
                 <TextView
                     android:id="@+id/txtDictation"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="#0F172A"
-                    android:padding="16dp"
-                    android:textAlignment="center"
-                    android:textColor="@color/text_secondary" />
+                    android:background="@color/clinical_bg"
+                    android:padding="18dp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp"
+                    android:lineSpacingMultiplier="1.2"
+                    android:fontFamily="monospace" />
             </androidx.core.widget.NestedScrollView>
 
             <TextView
                 android:id="@+id/txtIntegrity"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="12dp"
                 android:textAlignment="center"
-                android:textColor="@color/text_secondary"
-                android:textSize="12sp" />
+                android:textColor="@color/clinical_accent"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnActionCapture"
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
                 android:layout_marginTop="24dp"
-                android:text="CAPTURAR"
+                android:text="@string/btn_capture"
+                android:textColor="@color/clinical_bg"
+                android:textStyle="bold"
                 android:visibility="gone"
-                app:cornerRadius="16dp" />
+                app:cornerRadius="18dp"
+                app:backgroundTint="@color/clinical_accent" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnBackToMenu"
@@ -479,7 +433,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="VOLVER AL MENÚ"
+                android:text="@string/btn_back"
                 android:textColor="@color/text_secondary"
                 android:visibility="gone" />
         </LinearLayout>

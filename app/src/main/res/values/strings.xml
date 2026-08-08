@@ -1,3 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Neuro-Synapse</string>
+    <string name="dashboard_title">Dashboard Clínico</string>
+    <string name="module_vision">VISIÓN (HTP)</string>
+    <string name="module_voice">VOZ</string>
+    <string name="module_integral">INTEGRAL</string>
+    <string name="module_active">ACTIVO</string>
+    <string name="module_maintenance">MANTENIMIENTO</string>
+    <string name="status_ai_ready">CORE IA: DISPONIBLE</string>
+    <string name="status_ai_none">IA NO CARGADA</string>
+    <string name="status_ai_reasoning">IA RAZONANDO...</string>
+    <string name="btn_unlock">DESBLOQUEAR\nCORE</string>
+    <string name="btn_capture">CAPTURAR</string>
+    <string name="btn_back">VOLVER AL MENÚ</string>
+    <string name="system_stats">ESTADÍSTICAS DEL SISTEMA</string>
 </resources>

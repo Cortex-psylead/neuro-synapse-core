@@ -8,7 +8,8 @@ import kotlinx.coroutines.flow.reduce
 import kotlinx.coroutines.withContext
 import java.io.File
 
-class LlmInferenceManager private constructor(private val context: Context) {
+class LlmInferenceManager private constructor(context: Context) {
+    private val appContext = context.applicationContext
     private var llamaModel: LlamaModel? = null
 
     companion object {
@@ -17,7 +18,7 @@ class LlmInferenceManager private constructor(private val context: Context) {
         
         fun getInstance(context: Context): LlmInferenceManager {
             return instance ?: synchronized(this) {
-                instance ?: LlmInferenceManager(context.applicationContext).also { instance = it }
+                instance ?: LlmInferenceManager(context).also { instance = it }
             }
         }
         
@@ -33,7 +34,7 @@ class LlmInferenceManager private constructor(private val context: Context) {
         try {
             Log.d(TAG, "Cargando modelo desde: $modelPath")
             Log.d(TAG, "Archivo existe: ${File(modelPath).exists()}")
-            Log.d(TAG, "Tamaño: ${File(modelPath).length()} bytes")
+            Log.d(TAG, "TamaÃ±o: ${File(modelPath).length()} bytes")
 
             // Usamos LlamaModel de org.codeshipping (Maven Central)
             llamaModel = LlamaModel.load(modelPath) {
@@ -43,7 +44,7 @@ class LlmInferenceManager private constructor(private val context: Context) {
             }
             Log.d(TAG, "llama.cpp (GGUF) inicializado exitosamente via CodeShipping.")
         } catch (e: OutOfMemoryError) {
-            Log.e(TAG, "FALLO CRÍTICO: RAM insuficiente para el modelo GGUF.")
+            Log.e(TAG, "FALLO CRÃTICO: RAM insuficiente para el modelo GGUF.")
             throw Exception("Memoria insuficiente para cargar modelo")
         } catch (e: Exception) {
             Log.e(TAG, "Error inicializando modelo: ${e.message}", e)
@@ -55,7 +56,7 @@ class LlmInferenceManager private constructor(private val context: Context) {
         withContext(Dispatchers.IO) {
             try {
                 if (llamaModel == null) {
-                    val defaultPath = context.filesDir.absolutePath + "/llama-3.2-1b.gguf"
+                    val defaultPath = appContext.filesDir.absolutePath + "/llama-3.2-1b.gguf"
                     initialize(defaultPath)
                 }
                 
@@ -69,17 +70,18 @@ class LlmInferenceManager private constructor(private val context: Context) {
                 """.trimIndent()
                 
                 // Generamos la respuesta recolectando el Flow
+                // Nos aseguramos de concatenar correctamente los fragmentos de texto (tokens)
                 val response = llamaModel?.generateStream(fullPrompt)?.reduce { acc, value -> acc + value }
                 
-                // Liberar el modelo de RAM inmediatamente después de generar respuesta como se solicitó
-                close() 
-                
-                Result.success(response ?: "Sin respuesta del núcleo local")
+                Log.d(TAG, "Respuesta LLM (Raw): $response")
+                // Liberar el modelo de RAM inmediatamente despuÃ©s de generar respuesta para liberar recursos
+                close()
+                Result.success(response ?: "Sin respuesta del nÃºcleo local")
             } catch (e: OutOfMemoryError) {
                 Log.e(TAG, "OOM durante la inferencia local")
-                Result.failure(Exception("Memoria agotada durante análisis local"))
+                Result.failure(Exception("Memoria agotada durante anÃ¡lisis local"))
             } catch (e: Exception) {
-                Log.e(TAG, "Fallo en generación SLM: ${e.message}")
+                Log.e(TAG, "Fallo en generaciÃ³n SLM: ${e.message}")
                 Result.failure(e)
             }
         }

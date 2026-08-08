@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.NeuroSynapse" parent="Theme.Material3.Dark.NoActionBar">
-        <item name="android:windowBackground">@color/deep_clinical_bg</item>
-        <item name="colorPrimary">@color/accent_vision</item>
-        <item name="colorSurface">@color/deep_clinical_surface</item>
+        <item name="android:windowBackground">@color/clinical_bg</item>
+        <item name="colorPrimary">@color/clinical_accent</item>
+        <item name="colorSurface">@color/clinical_surface</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>
+        <item name="android:fontFamily">sans-serif</item>
     </style>
 </resources>
