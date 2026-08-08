@@ -234,13 +234,57 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showSystemSettingsDialog() {
-        val options = arrayOf("Gestionar Modelos", "Integridad del Búnker")
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Sistema")
-            .setItems(options) { _, which ->
-                if (which == 0) showModelManagerDialog() else showIntegrityLogs()
-            }
-            .show()
+        val container = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(48, 24, 48, 48)
+        }
+
+        var dialog: androidx.appcompat.app.AlertDialog? = null
+
+        val btnRescan = createMenuButton(getString(R.string.menu_rescan), R.drawable.ic_refresh) {
+            Toast.makeText(this, getString(R.string.toast_auditing), Toast.LENGTH_SHORT).show()
+            validateAIEngine()
+            dialog?.dismiss()
+        }
+
+        val btnManage = createMenuButton(getString(R.string.menu_manage_models), R.drawable.ic_settings) {
+            showModelManagerDialog()
+            dialog?.dismiss()
+        }
+
+        val btnIntegrity = createMenuButton(getString(R.string.menu_integrity), R.drawable.ic_integral) {
+            showIntegrityLogs()
+            dialog?.dismiss()
+        }
+
+        container.addView(btnRescan)
+        container.addView(View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 24) })
+        container.addView(btnManage)
+        container.addView(View(this).apply { layoutParams = LinearLayout.LayoutParams(1, 24) })
+        container.addView(btnIntegrity)
+
+        dialog = MaterialAlertDialogBuilder(this, com.google.android.material.R.style.Theme_Material3_Dark_Dialog_Alert)
+            .setTitle("Configuración del Búnker")
+            .setView(container)
+            .setNegativeButton("CERRAR", null)
+            .create()
+        
+        dialog.show()
+    }
+
+    private fun createMenuButton(text: String, iconRes: Int, onClick: () -> Unit): com.google.android.material.button.MaterialButton {
+        return com.google.android.material.button.MaterialButton(this, null, com.google.android.material.R.attr.materialButtonStyle).apply {
+            this.text = text
+            this.icon = ContextCompat.getDrawable(this@MainActivity, iconRes)
+            this.iconGravity = com.google.android.material.button.MaterialButton.ICON_GRAVITY_TEXT_START
+            this.iconPadding = 32
+            this.cornerRadius = (16 * resources.displayMetrics.density).toInt()
+            this.setPadding(40, 40, 40, 40)
+            this.setBackgroundColor(getColor(R.color.clinical_surface))
+            this.setTextColor(getColor(R.color.text_primary))
+            this.iconTint = ContextCompat.getColorStateList(this@MainActivity, R.color.clinical_accent)
+            this.setOnClickListener { onClick() }
+        }
     }
 
     private fun showModelManagerDialog() {
@@ -308,20 +352,38 @@ class MainActivity : AppCompatActivity() {
         val internal = File(filesDir, pendingModelFileName ?: "llama-3.2-1b.gguf")
         if (downloaded.exists()) {
             lifecycleScope.launch {
-                binding.txtStatus.text = "INSTALANDO..."
+                binding.dashboardOptions.isGone = true
+                binding.controlPanel.isVisible = true
+                binding.btnBackToMenu.isGone = true
+                binding.txtStatus.text = "SINCRO: NÚCLEO IA"
+                binding.txtDictation.text = "Sellando búnker de datos local..."
+                
                 withContext(Dispatchers.IO) {
                     downloaded.inputStream().use { input -> internal.outputStream().use { output -> input.copyTo(output) } }
                     downloaded.delete()
                 }
+                
                 validateAIEngine()
                 LlmInferenceManager.destroyInstance()
                 binding.btnBackToMenu.isVisible = true
+                Toast.makeText(this@MainActivity, "Búnker sellado: IA Lista.", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     private fun showIntegrityLogs() {
         MaterialAlertDialogBuilder(this).setTitle("Seguridad").setMessage("Cifrado AES-256 Activo.\nIntegridad: SEALED.").show()
+    }
+
+    private fun verifyModelIntegrity(file: File): Boolean {
+        if (!file.exists()) return false 
+        return try {
+            FileInputStream(file).use { fis ->
+                val header = ByteArray(4)
+                fis.read(header)
+                String(header) == "GGUF"
+            }
+        } catch (e: Exception) { false }
     }
 
     private fun setupBackNavigation() {
@@ -356,16 +418,48 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun validateAIEngine() {
-        val model = File(filesDir, "llama-3.2-1b.gguf")
-        if (model.exists() && model.length() > 500 * 1024 * 1024) {
-            isModelLoadedInRam = true
-            activeModelPath = model.absolutePath
-            binding.aiStatusDot.setBackgroundColor(getColor(R.color.status_green))
-            binding.aiStatusText.text = "CORE IA: DISPONIBLE"
-        } else {
-            isModelLoadedInRam = false
-            binding.aiStatusDot.setBackgroundColor(getColor(R.color.status_red))
-            binding.aiStatusText.text = "IA NO CARGADA"
+        val llamaFile = File(filesDir, "llama-3.2-1b.gguf")
+        val gemmaFile = File(filesDir, "gemma-2b.gguf")
+        val tempFile = File(getExternalFilesDir(null), "llama_tmp.gguf")
+        
+        Log.d("NS-Audit", "Auditoría: Llama=${llamaFile.exists()}, Gemma=${gemmaFile.exists()}, Temp=${tempFile.exists()}")
+
+        // AUDITORÍA DE EMERGENCIA: Si existe un archivo temporal válido (>500MB), moverlo.
+        if (tempFile.exists() && tempFile.length() > 500 * 1024 * 1024) {
+            if (verifyModelIntegrity(tempFile)) {
+                Log.i("NS-Audit", "Archivo temp válido detectado (${tempFile.length()} bytes). Finalizando instalación...")
+                finalizeModelInstallation()
+                return 
+            } else {
+                Log.w("NS-Audit", "Archivo temp detectado pero no tiene cabecera GGUF válida.")
+            }
+        }
+
+        val activeModel = when {
+            llamaFile.exists() && llamaFile.length() > 500 * 1024 * 1024 && verifyModelIntegrity(llamaFile) -> llamaFile
+            gemmaFile.exists() && gemmaFile.length() > 500 * 1024 * 1024 && verifyModelIntegrity(gemmaFile) -> gemmaFile
+            else -> null
+        }
+        
+        runOnUiThread {
+            if (activeModel != null) {
+                isModelLoadedInRam = true
+                activeModelPath = activeModel.absolutePath
+                binding.aiStatusDot.setBackgroundColor(getColor(R.color.status_green))
+                binding.aiStatusText.text = "CORE IA: DISPONIBLE"
+                Log.d("NS-Audit", "Estado: VERIFICADO ✓ (${activeModel.name})")
+            } else {
+                isModelLoadedInRam = false
+                activeModelPath = null
+                binding.aiStatusDot.setBackgroundColor(getColor(R.color.status_red))
+                binding.aiStatusText.text = "IA NO CARGADA"
+                
+                // Saneamiento de archivos corruptos o incompletos para evitar bloqueos
+                if (llamaFile.exists() && (llamaFile.length() <= 500 * 1024 * 1024 || !verifyModelIntegrity(llamaFile))) {
+                    Log.w("NS-Audit", "Eliminando Llama corrupto o incompleto.")
+                    llamaFile.delete()
+                }
+            }
         }
     }
 

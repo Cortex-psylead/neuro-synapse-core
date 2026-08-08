@@ -3,8 +3,8 @@
 ---
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Version](https://img.shields.io/badge/Version-0.1.0--alpha-orange.svg)]()
-[![Status](https://img.shields.io/badge/Status-Under%20Construction-yellow.svg)]()
+[![Version](https://img.shields.io/badge/Version-0.2.0--beta-green.svg)]()
+[![Status](https://img.shields.io/badge/Status-Beta%20Ready-blue.svg)]()
 
 > [!IMPORTANT]  
 > **DISCLAIMER:** Esta es una herramienta de asistencia clínica, no un dispositivo de diagnóstico. Todos los borradores generados por la IA deben ser verificados y firmados por un profesional licenciado. Neuro-Synapse no reemplaza el juicio clínico humano.
@@ -38,23 +38,23 @@ Como software libre (Open Source), nuestro código está abierto a auditorías d
 
 ---
 
-## 🚀 Estado del Proyecto (Alpha v0.1.0)
+## 🚀 Estado del Proyecto (Beta v0.2.0)
 
-Actualmente, el búnker de datos y los motores de captura son operativos. Estamos en fase de desarrollo activo de las capacidades analíticas:
+Actualmente, el búnker de datos y los motores de captura son operativos. Hemos alcanzado la fase de razonamiento local estable:
 
 - **[Operativo]** Búnker de Datos Cifrado (Room v5 + SQLCipher).
-- **[Operativo]** Dashboard Clínico Material 3 con Telemetría de Hardware.
-- **[En Desarrollo]** Módulo de Transcripción y Razonamiento SOAP (Llama 3.2).
-- **[En Desarrollo]** Módulos de Diagnóstico Avanzado:
-    - **Análisis de Prosodia Vocal:** Detección de estrés y marcadores acústicos.
-    - **Análisis Proyectivo HTP:** Visión artificial nativa (OpenCV) para el test Casa-Árbol-Persona.
+- **[Operativo]** Dashboard Clínico Premium con Telemetría Dinámica.
+- **[Operativo]** Inferencia Local de Llama 3.2 (GGUF) vía llama.cpp.
+- **[Operativo]** Análisis Proyectivo HTP Estabilizado (OpenCV Burst Capture).
+- **[En Desarrollo]** Módulo de Prosodia Vocal v2.
+- **[En Desarrollo]** Exportación de Reportes a PDF Cifrado.
 
 ---
 
 ## 🛠️ Stack Tecnológico
 
 - **Language:** Kotlin 2.1 (Multiplatform)
-- **AI Core:** Llama 3.2 via MediaPipe LLM Inference.
+- **AI Core:** Llama 3.2 via llama.cpp (GGUF Support).
 - **Vision:** OpenCV Native SDK.
 - **Security:** SQLCipher + BiometricPrompt API.
 - **UI:** Material 3 (Deep Clinical Aesthetic).

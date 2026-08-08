@@ -14,4 +14,8 @@
     <string name="btn_capture">CAPTURAR</string>
     <string name="btn_back">VOLVER AL MENÚ</string>
     <string name="system_stats">ESTADÍSTICAS DEL SISTEMA</string>
+    <string name="menu_rescan">RE-ESCANEAR NÚCLEO</string>
+    <string name="menu_manage_models">GESTIONAR MODELOS</string>
+    <string name="menu_integrity">INTEGRIDAD DEL BÚNKER</string>
+    <string name="toast_auditing">Auditando almacenamiento interno...</string>
 </resources>

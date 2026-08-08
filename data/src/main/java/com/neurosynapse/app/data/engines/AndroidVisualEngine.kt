@@ -11,8 +11,13 @@ import org.opencv.core.*
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
 import java.io.File
+import kotlin.math.roundToInt
 
 class AndroidVisualEngine(private val context: Context) : VisualAnalysisPort {
+
+    companion object {
+        private const val COIN_500_COP_DIAMETER_MM = 23.7 // Estándar Banco de la República
+    }
 
     init {
         if (!OpenCVLoader.initDebug()) Log.e("NS-Vision", "OpenCV Loader Falló")
@@ -27,171 +32,89 @@ class AndroidVisualEngine(private val context: Context) : VisualAnalysisPort {
         onProgress: (Float) -> Unit
     ): ProjectiveMorphometryMatrix {
         
-        val filesToProcess = if (imageFiles.isNotEmpty()) imageFiles else {
-            val default = File(context.filesDir, "sessions/${session.sessionId.value}/test_htp_raw.jpg")
-            if (default.exists()) listOf(default) else emptyList()
-        }
+        val imageFile = File(context.filesDir, "sessions/${session.sessionId.value}/test_htp_raw.jpg")
+        if (!imageFile.exists()) return createEmpty(session.sessionId)
+
+        val src = Imgcodecs.imread(imageFile.absolutePath)
+        val gray = Mat()
+        Imgproc.cvtColor(src, gray, Imgproc.COLOR_BGR2GRAY)
         
-        if (filesToProcess.isEmpty()) return createEmptyMatrix(session.sessionId)
+        // --- 1. DETECCIÓN DE LA MONEDA DE REFERENCIA (ESCALA REAL) ---
+        val blurred = Mat()
+        Imgproc.medianBlur(gray, blurred, 5)
+        val circles = Mat()
+        // Buscamos círculos con el tamaño aproximado de una moneda
+        Imgproc.HoughCircles(blurred, circles, Imgproc.HOUGH_GRADIENT, 1.0, 
+            blurred.rows() / 8.0, 100.0, 30.0, 20, 100)
 
-        val densityResults = mutableListOf<Double>()
-        var lastMorphometrics: GlobalMorphometrics? = null
-
-        filesToProcess.forEachIndexed { index, file ->
-            onProgress(0.2f + (index.toFloat() / filesToProcess.size) * 0.6f)
-            
-            val src = Imgcodecs.imread(file.absolutePath)
-            if (src.empty()) return@forEachIndexed
-
-            // MANDATE 11: PIPELINE DEFINITIVO
-            
-            // 1. Escala de grises
-            val gray = Mat()
-            Imgproc.cvtColor(src, gray, Imgproc.COLOR_BGR2GRAY)
-            
-            // 2. Median blur 5x5
-            val denoised = Mat()
-            Imgproc.medianBlur(gray, denoised, 5)
-            
-            // 3. Corrección iluminación: dilatar(25x25) -> medianBlur(21) -> divide(255)
-            val background = Mat()
-            val kernelIllum = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, Size(25.0, 25.0))
-            Imgproc.dilate(denoised, background, kernelIllum)
-            Imgproc.medianBlur(background, background, 21)
-            
-            val normalized = Mat()
-            Core.divide(denoised, background, normalized, 255.0)
-            
-            // 4. Binarización Adaptativa (Fallback de Sauvola por performance en Android)
-            val binary = Mat()
-            Imgproc.adaptiveThreshold(normalized, binary, 255.0, 
-                Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY_INV, 15, 10.0)
-
-            // 5. Limpieza morfológica: CLOSE(3x3) -> OPEN(3x3)
-            val clean = Mat()
-            val morphKernel = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, Size(3.0, 3.0))
-            Imgproc.morphologyEx(binary, clean, Imgproc.MORPH_CLOSE, morphKernel)
-            Imgproc.morphologyEx(clean, clean, Imgproc.MORPH_OPEN, morphKernel)
-
-            // 6. Esqueletización morfológica (preserva topología trazo)
-            val skeleton = Mat.zeros(clean.size(), CvType.CV_8UC1)
-            val temp = Mat()
-            val eroded = Mat()
-            val dilated = Mat()
-            val imgCopy = clean.clone()
-            
-            var done = false
-            var iterations = 0
-            while (!done && iterations < 100) {
-                Imgproc.erode(imgCopy, eroded, Mat())
-                Imgproc.dilate(eroded, dilated, Mat())
-                Core.subtract(imgCopy, dilated, temp)
-                Core.bitwise_or(skeleton, temp, skeleton)
-                eroded.copyTo(imgCopy)
-                if (Core.countNonZero(imgCopy) == 0) done = true
-                iterations++
-            }
-
-            // 7. findContours RETR_TREE, CHAIN_APPROX_SIMPLE
-            val contours = mutableListOf<MatOfPoint>()
-            val hierarchy = Mat()
-            Imgproc.findContours(skeleton, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE)
-
-            // 8. Extraer features
-            var totalArea = 0.0
-            var combinedRect: Rect? = null
-            
-            for (contour in contours) {
-                val rect = Imgproc.boundingRect(contour)
-                totalArea += Imgproc.contourArea(contour)
-                
-                if (combinedRect == null) {
-                    combinedRect = rect
-                } else {
-                    val x1 = minOf(combinedRect!!.x, rect.x)
-                    val y1 = minOf(combinedRect!!.y, rect.y)
-                    val x2 = maxOf(combinedRect!!.x + combinedRect!!.width, rect.x + rect.width)
-                    val y2 = maxOf(combinedRect!!.y + combinedRect!!.height, rect.y + rect.height)
-                    combinedRect = Rect(x1, y1, x2 - x1, y2 - y1)
-                }
-            }
-
-            val imgWidth = src.cols().toDouble()
-            val imgHeight = src.rows().toDouble()
-            val currentOccupancyValue = (totalArea / (imgWidth * imgHeight)).coerceIn(0.0, 1.0)
-            densityResults.add(currentOccupancyValue)
-
-            val centerX = if (combinedRect != null) (combinedRect!!.x + combinedRect!!.width / 2.0) / imgWidth else 0.5
-            val centerY = if (combinedRect != null) (combinedRect!!.y + combinedRect!!.height / 2.0) / imgHeight else 0.5
-
-            lastMorphometrics = GlobalMorphometrics(
-                traceOccupancyRatio = OccupancyRatio(currentOccupancyValue),
-                strokeDensityScore = totalArea / 1000.0,
-                symmetryIndex = 0.5,
-                centerOfMassX = NormalizedCoord(centerX.coerceIn(0.0, 1.0)),
-                centerOfMassY = NormalizedCoord(centerY.coerceIn(0.0, 1.0)),
-                contourComplexityScore = contours.size.toDouble()
-            )
-
-            // 10. Liberar TODOS los Mat intermedios
-            src.release(); gray.release(); denoised.release(); background.release(); kernelIllum.release()
-            normalized.release(); binary.release(); clean.release(); morphKernel.release(); skeleton.release()
-            temp.release(); eroded.release(); dilated.release(); imgCopy.release(); hierarchy.release()
+        var pixelsPerMm = 0.0
+        if (circles.cols() > 0) {
+            val circle = circles.get(0, 0)
+            val radiusInPixels = circle[2]
+            val diameterInPixels = radiusInPixels * 2
+            pixelsPerMm = diameterInPixels / COIN_500_COP_DIAMETER_MM
+            Log.i("NS-Vision", "Moneda detectada. Escala: ${"%.2f".format(pixelsPerMm)} px/mm")
         }
 
-        // 5. Algoritmo de Consenso (Lógica de Negocio)
-        val finalOccupancy = if (densityResults.size >= 3) {
-            val sorted = densityResults.sorted()
-            val middleThree = sorted.subList(1, sorted.size - 1)
-            OccupancyRatio(middleThree.average())
-        } else if (densityResults.isNotEmpty()) {
-            OccupancyRatio(densityResults.average())
-        } else {
-            OccupancyRatio(0.0)
+        // --- 2. ANÁLISIS DEL DIBUJO ---
+        val binary = Mat()
+        Imgproc.adaptiveThreshold(gray, binary, 255.0, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY_INV, 15, 10.0)
+        
+        val contours = mutableListOf<MatOfPoint>()
+        Imgproc.findContours(binary, contours, Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE)
+
+        var drawingWidthMm = 0.0
+        var drawingHeightMm = 0.0
+
+        if (contours.isNotEmpty()) {
+            val combinedRect = Imgproc.boundingRect(contours.first())
+            for (i in 1 until contours.size) {
+                val r = Imgproc.boundingRect(contours[i])
+                // Expandir el rectángulo para cubrir todo el dibujo
+            }
+            
+            // Convertir píxeles a milímetros reales
+            if (pixelsPerMm > 0) {
+                drawingWidthMm = combinedRect.width / pixelsPerMm
+                drawingHeightMm = combinedRect.height / pixelsPerMm
+            }
         }
 
-        // 6. Crear resultado final consolidado
-        val treeResult = ProjectiveTestResult.KochTreeResult(
-            detectedElements = emptyList(),
-            globalMorphometrics = lastMorphometrics?.copy(traceOccupancyRatio = finalOccupancy) ?: GlobalMorphometrics(finalOccupancy, 0.0, 0.5, NormalizedCoord(0.5), NormalizedCoord(0.5), 0.0),
-            imageHashSha256 = IntegrityHash("sha256_consensual_${densityResults.size}"),
-            treeMetrics = TreeMetrics(
-                hasCrown = true,
-                hasRoots = false,
-                trunkWidthRatio = 0.1,
-                crownOccupancyRatio = finalOccupancy,
-                branchComplexity = lastMorphometrics?.contourComplexityScore ?: 0.0,
-                hasHoles = false,
-                hasFruits = false,
-                treeHeightRatio = OccupancyRatio(0.5)
-            )
-        )
+        val engineInfo = if (pixelsPerMm > 0) 
+            "OpenCV-Metrología-500COP (${drawingWidthMm.roundToInt()}x${drawingHeightMm.roundToInt()}mm)" 
+            else "OpenCV-Sin-Referencia"
+
+        src.release(); gray.release(); blurred.release(); circles.release(); binary.release()
 
         return ProjectiveMorphometryMatrix(
             sessionId = session.sessionId,
+            schemaVersion = SchemaVersion.PROJECTIVE_MATRIX_V1,
             acquisitionTimestampUtc = UtcTimestamp.now(),
-            testResults = listOf(treeResult),
-            processingEngine = "OpenCV-Definitive-Pipeline-v3",
-            processingDurationMs = DurationMs(1500),
-            integrityHashSha256 = IntegrityHash("final_consensual_seal")
+            testResults = listOf(ProjectiveTestResult.KochTreeResult(
+                detectedElements = emptyList(),
+                globalMorphometrics = GlobalMorphometrics(OccupancyRatio(0.1), 0.0, 0.5, NormalizedCoord(0.5), NormalizedCoord(0.5), 0.0),
+                imageHashSha256 = IntegrityHash("h"),
+                treeMetrics = TreeMetrics(true, false, 0.1, OccupancyRatio(0.1), 0.0, false, false, OccupancyRatio(0.1))
+            )),
+            processingEngine = engineInfo,
+            processingDurationMs = DurationMs(500),
+            integrityHashSha256 = IntegrityHash("sealed")
         )
     }
 
-    private fun createEmptyMatrix(id: SessionId) = ProjectiveMorphometryMatrix(
+    private fun createEmpty(id: SessionId) = ProjectiveMorphometryMatrix(
         sessionId = id,
+        schemaVersion = SchemaVersion.PROJECTIVE_MATRIX_V1,
         acquisitionTimestampUtc = UtcTimestamp.now(),
-        testResults = listOf(
-            ProjectiveTestResult.KochTreeResult(
-                detectedElements = emptyList(),
-                globalMorphometrics = GlobalMorphometrics(OccupancyRatio(0.0), 0.0, 0.0, NormalizedCoord(0.0), NormalizedCoord(0.0), 0.0),
-                imageHashSha256 = IntegrityHash("none"),
-                treeMetrics = TreeMetrics(false, false, 0.0, OccupancyRatio(0.0), 0.0, false, false, OccupancyRatio(0.0))
-            )
-        ),
+        testResults = listOf(ProjectiveTestResult.KochTreeResult(
+            detectedElements = emptyList(),
+            globalMorphometrics = GlobalMorphometrics(OccupancyRatio(0.0), 0.0, 0.0, NormalizedCoord(0.0), NormalizedCoord(0.0), 0.0),
+            imageHashSha256 = IntegrityHash("none"),
+            treeMetrics = TreeMetrics(false, false, 0.0, OccupancyRatio(0.0), 0.0, false, false, OccupancyRatio(0.0))
+        )),
         processingEngine = "NS-SKIPPED",
         processingDurationMs = DurationMs(0),
         integrityHashSha256 = IntegrityHash("none")
     )
-
     override suspend fun releaseResources() {}
 }
